@@ -59,25 +59,6 @@ public class Badraulic implements ModInitializer, EventRegistrar {
         jsonTexture.writerWithDefaultPrettyPrinter().writeValue(new File("textureData.json"), jsonObject);
     }
 
-    @Subscribe
-    public void mapCustomPolymerBlockItems(GeyserDefineCustomItemsEvent event) {
-        for (var entry : Registries.ITEM.getEntrySet()) {
-            Item item = entry.getValue();
-            if (item instanceof BlockItem blockItem && item instanceof PolymerItem polymerItem) {
-                NonVanillaCustomItemData customItemData = NonVanillaCustomItemData.builder()
-                        .name(entry.getKey().getValue().getPath())
-                        .identifier(entry.getKey().getValue().toString())
-                        .javaId(Registries.ITEM.getRawId(item))
-                        .creativeCategory(1)
-                        .block(entry.getKey().getValue().getPath())
-                        .icon(entry.getKey().getValue().getPath())
-                        .build();
-
-                event.register(customItemData);
-            }
-        }
-    }
-
     public static String convertBlockFormat(String input) {
         return input.replace("Block{", "").replace("}", "")
                 .replace("minecraft:note_block[", "")
