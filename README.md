@@ -7,3 +7,6 @@ What this does is just simply
 -- Note
 
 Only works with noteblocks.
+
+EXPECT NO SUPPORT
+THIS IS MADE TO LESSEN WORK
