@@ -69,7 +69,7 @@ public class Badraulic implements ModInitializer, EventRegistrar {
                         .identifier(entry.getKey().getValue().toString())
                         .javaId(Registries.ITEM.getRawId(item))
                         .creativeCategory(1)
-                        .block(entry.getKey().getValue().toString())
+                        .block(entry.getKey().getValue().getPath())
                         .icon(entry.getKey().getValue().getPath())
                         .build();
 
