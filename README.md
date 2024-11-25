@@ -6,6 +6,7 @@ What this does is just simply
 
 -- Note
 
+Same texture blocks only.
 Only works with noteblocks.
 
 EXPECT NO SUPPORT
