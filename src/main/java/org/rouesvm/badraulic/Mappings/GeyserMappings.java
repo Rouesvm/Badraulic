@@ -1,6 +1,7 @@
 package org.rouesvm.badraulic.Mappings;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import eu.pb4.polymer.core.api.block.PolymerBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -9,13 +10,15 @@ import net.minecraft.registry.Registries;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
+
+import static org.rouesvm.badraulic.Pack.PackReader.getTextures;
 
 public class GeyserMappings {
     public static void createJsonFiles(Map<String, Object> instances) throws IOException {
+        Set<String> stringSet = getTextures();
+
         Map<String, Object> geysers = new HashMap<>();
         Map<String, Object> jsonObject = new HashMap<>();
 
@@ -28,10 +31,11 @@ public class GeyserMappings {
                     String name = entry.getKey().getValue().getPath();
 
                     geysers.put(geyserState, createGeyserState(name, block, getSimilarNames(instances, name)));
-                    createGeyserTextures(name, jsonObject);
+                    createGeyserTextures(stringSet, jsonObject);
                 }
             }
         }
+
         ObjectMapper mapper = new ObjectMapper();
         ObjectMapper jsonTexture = new ObjectMapper();
         mapper.writerWithDefaultPrettyPrinter().writeValue(new File("output.json"), geysers);
@@ -62,23 +66,37 @@ public class GeyserMappings {
         geyserDetails.put("display_name", name);
         geyserDetails.put("destructible_by_mining", block.getHardness() * 2);
 
-        // Todo-list
-        // -- Add support for sides.
-        if (instances != null && !instances.isEmpty()) {
-            geyserDetails.put("material_instances", instances.getFirst());  // Put first item of the list as an object
-        }
+        geyserDetails.put("material_instances", instances.getFirst());
         return geyserDetails;
+    }
+
+    private static void createGeyserTextures(Set<String> names, Map<String, Object> jsonObject) {
+        names.forEach(string -> {
+            Map<String, Object> textureDetails = new HashMap<>();
+            textureDetails.put("texture", string);
+            jsonObject.put(string, textureDetails);
+        });
+
+        System.out.println(jsonObject);
+    }
+
+    private static String extractTexture(String name) {
+        String textureKey = "\"texture\": \"";
+        int startIndex = name.indexOf(textureKey);
+
+        if (startIndex != -1) {
+            int endIndex = name.indexOf("\"", startIndex + textureKey.length());
+            if (endIndex != -1) {
+                return name.substring(startIndex + textureKey.length(), endIndex);
+            }
+        }
+
+        return null;
     }
 
     private static String convertBlockFormat(String input) {
         return input.replace("Block{", "").replace("}", "")
                 .replace("minecraft:note_block[", "")
                 .replace("]", "");
-    }
-
-    private static void createGeyserTextures(String name, Map<String, Object> jsonObject) {
-        Map<String, Object> textureDetails = new HashMap<>();
-        textureDetails.put("textures", "textures/blocks/" + name);
-        jsonObject.put(name, textureDetails);
     }
 }

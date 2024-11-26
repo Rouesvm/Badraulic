@@ -9,23 +9,16 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 public class PackReader {
     public static Map<String, Object> getMaterialInstances() {
-        String zipFilePath = "polymer/resource_pack.zip";
-        String outputDir = "polymer/resource_pack_unzipped";
-
         Map<String, Object> geysers = new HashMap<>();
 
         try {
-            unzip(zipFilePath, outputDir);
-            List<Path> jsonFiles = findJsonFiles(outputDir, "models/custom/block");
+            List<Path> jsonFiles = unzipPolymerPackAndGetJsonFiles();
             if (!jsonFiles.isEmpty()) {
                 System.out.println("Found JSON files:");
                 jsonFiles.forEach(file -> {
@@ -42,8 +35,59 @@ public class PackReader {
             System.err.println("Error: " + e.getMessage());
         }
 
-        new File(outputDir).delete();
         return geysers;
+    }
+
+    public static Set<String> getTextures() throws IOException {
+        String outputDir = "polymer/resource_pack_unzipped";
+
+        Set<String> geysers = new HashSet<>();
+
+        getJsonFiles(outputDir).forEach(file -> {
+            try {
+                Set<String> textures = getTextureName(file.toFile());
+                if (textures != null) geysers.addAll(textures);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+        return geysers;
+    }
+
+    private static Set<String> getTextureName(File input) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        Set<String> texturesSet = new HashSet<>();
+        JsonNode root = mapper.readTree(input);
+
+        // Extract textures
+        JsonNode textures = root.path("textures");
+        ObjectNode textureMap = mapper.createObjectNode();
+        if (textures.isObject()) {
+            textures.fields().forEachRemaining(entry -> {
+                String key = "#" + entry.getKey(); // Prefix with '#' to match face texture keys
+                String value = entry.getValue().asText();
+                textureMap.put(key, value);
+            });
+        }
+
+        JsonNode elements = root.path("elements");
+        if (elements.isArray()) {
+            for (JsonNode element : elements) {
+                JsonNode faces = element.path("faces");
+                if (faces.isObject()) {
+                    faces.fields().forEachRemaining(entry -> {
+                        JsonNode faceData = entry.getValue();
+                        String textureKey = faceData.path("texture").asText();
+                        String realTexture = textureMap.path(textureKey).asText();
+                        texturesSet.add(realTexture);
+                    });
+
+                    return texturesSet;
+                }
+            }
+        }
+        return null;
     }
 
     public static ObjectNode convertState(File input) throws IOException {
@@ -150,5 +194,17 @@ public class PackReader {
                 .forEach(jsonFiles::add);
 
         return jsonFiles;
+    }
+
+
+    private static List<Path> unzipPolymerPackAndGetJsonFiles() throws IOException {
+        String zipFilePath = "polymer/resource_pack.zip";
+        String outputDir = "polymer/resource_pack_unzipped";
+        unzip(zipFilePath, outputDir);
+        return getJsonFiles(outputDir);
+    }
+
+    private static List<Path> getJsonFiles(String outputDir) throws IOException {
+        return findJsonFiles(outputDir, "models/custom/block");
     }
 }
