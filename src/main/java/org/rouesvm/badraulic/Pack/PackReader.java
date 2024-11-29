@@ -23,7 +23,7 @@ public class PackReader {
                 System.out.println("Found JSON files:");
                 jsonFiles.forEach(file -> {
                     try {
-                        geysers.put(file.toFile().getName(), convertState(file.toFile()));
+                        convertState(file.toFile(), geysers);
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
@@ -90,11 +90,10 @@ public class PackReader {
         return null;
     }
 
-    public static ObjectNode convertState(File input) throws IOException {
+    private static void convertState(File input, Map<String, Object> geyser) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         JsonNode root = mapper.readTree(input);
 
-        // Extract textures
         JsonNode textures = root.path("textures");
         ObjectNode textureMap = mapper.createObjectNode();
         if (textures.isObject()) {
@@ -105,7 +104,6 @@ public class PackReader {
             });
         }
 
-        // Extract material_instances with faces
         JsonNode elements = root.path("elements");
         if (elements.isArray()) {
             for (JsonNode element : elements) {
@@ -121,14 +119,11 @@ public class PackReader {
                         ObjectNode faceObject = mapper.createObjectNode();
                         faceObject.put("texture", realTexture);
                         simplifiedFaces.set(face, faceObject);
+                        geyser.put(realTexture, simplifyFace(simplifiedFaces));
                     });
-
-                    return simplifyFace(simplifiedFaces);
                 }
             }
         }
-
-        return null;
     }
 
     public static ObjectNode simplifyFace(ObjectNode faces) {
@@ -205,6 +200,9 @@ public class PackReader {
     }
 
     private static List<Path> getJsonFiles(String outputDir) throws IOException {
-        return findJsonFiles(outputDir, "models/custom/block");
+        List<Path> block1 = findJsonFiles(outputDir, "models/custom/block");
+        List<Path> block2 = findJsonFiles(outputDir, "models/block");
+        block2.addAll(block1);
+        return block2;
     }
 }

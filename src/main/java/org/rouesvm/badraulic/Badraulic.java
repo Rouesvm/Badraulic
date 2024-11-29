@@ -9,7 +9,7 @@ import org.rouesvm.badraulic.Pack.PackReader;
 import java.io.IOException;
 import java.util.Map;
 
-import static org.rouesvm.badraulic.Mappings.GeyserMappings.createJsonFiles;
+import static org.rouesvm.badraulic.Mappings.GeyserMappings.getBlocks;
 
 public class Badraulic implements ModInitializer, EventRegistrar {
 
@@ -18,10 +18,8 @@ public class Badraulic implements ModInitializer, EventRegistrar {
         ServerLifecycleEvents.SERVER_STARTING.register(minecraftServer -> {
             GeyserApi.api().eventBus().register(this, this);
 
-            Map<String, Object> materialInstances = PackReader.getMaterialInstances();
-
             try {
-                createJsonFiles(materialInstances);
+                getBlocks();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
