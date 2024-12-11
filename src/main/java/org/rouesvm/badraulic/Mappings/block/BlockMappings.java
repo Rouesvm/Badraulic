@@ -2,6 +2,7 @@ package org.rouesvm.badraulic.Mappings.block;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.google.common.collect.ImmutableList;
 import eu.pb4.polymer.core.api.block.PolymerBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -28,19 +29,24 @@ public class BlockMappings {
         Block block = entry.getValue();
 
         if (!(block instanceof PolymerBlock polymerTexturedBlock)) return;
-        BlockState state = polymerTexturedBlock.getPolymerBlockState(block.getDefaultState(), PacketContext.create());
-        if (!(state.getBlock() instanceof NoteBlock)) return;
 
-        Identifier identifier = entry.getKey().getValue();
-        String modName = identifier.getNamespace();
-        String blockName = identifier.getPath();
+        ImmutableList<BlockState> state = block.getStateManager().getStates();
 
-        String geyserState = BlockMappings.convertBlockFormat(state.toString());
+        state.forEach(blockState -> {
+            BlockState noteblockState = polymerTexturedBlock.getPolymerBlockState(blockState);
+            if (!(noteblockState.getBlock() instanceof NoteBlock)) return;
 
-        Map<String, Object> stateOverrides = modStateOverrides
-                .computeIfAbsent(modName, k -> new HashMap<>());
+            Identifier identifier = entry.getKey().getValue();
+            String modName = identifier.getNamespace();
+            String blockName = identifier.getPath();
 
-        stateOverrides.put(geyserState, BlockMappings.createGeyserState(blockName, block, BlockMappings.getSimilarNames(instances, blockName)));
+            String geyserState = BlockMappings.convertBlockFormat(noteblockState.toString());
+
+            Map<String, Object> stateOverrides = modStateOverrides
+                    .computeIfAbsent(modName, k -> new HashMap<>());
+
+            stateOverrides.put(geyserState, BlockMappings.createGeyserState(blockName, block, BlockMappings.getSimilarNames(instances, blockName)));
+        });
     }
 
     public static void createFiles(Set<String> stringSet, Map<String, Map<String, Object>> modGeysers) throws IOException {

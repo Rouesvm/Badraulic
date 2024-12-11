@@ -10,6 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -98,9 +99,24 @@ public class PackReader {
         ObjectNode textureMap = mapper.createObjectNode();
         if (textures.isObject()) {
             textures.fields().forEachRemaining(entry -> {
-                String key = "#" + entry.getKey(); // Prefix with '#' to match face texture keys
-                String value = entry.getValue().asText();
-                textureMap.put(key, value);
+                String key = entry.getKey();
+                String texture = entry.getValue().asText();
+
+                if (Objects.equals(key, "side")) {
+                    textureMap.put("*", texture);
+                    textureMap.put("north", texture);
+                    textureMap.put("east", texture);
+                    textureMap.put("south", texture);
+                    textureMap.put("west", texture);
+                    return;
+                } else if (Objects.equals(key, "end")) {
+                    textureMap.put("up", texture);
+                    textureMap.put("down", texture);
+                    return;
+                }
+
+                String prefixedKey = "#" + key;
+                textureMap.put(prefixedKey, texture);
             });
         }
 
@@ -119,10 +135,23 @@ public class PackReader {
                         ObjectNode faceObject = mapper.createObjectNode();
                         faceObject.put("texture", realTexture);
                         simplifiedFaces.set(face, faceObject);
+
                         geyser.put(realTexture, simplifyFace(simplifiedFaces));
                     });
                 }
             }
+        } else  {
+            String realTexture = textureMap.path("*").asText();
+            ObjectNode materialInstances = mapper.createObjectNode();
+            materialInstances.putObject("*").put("texture", textureMap.path("*").asText());
+            materialInstances.putObject("north").put("texture", textureMap.path("north").asText());
+            materialInstances.putObject("east").put("texture", textureMap.path("east").asText());
+            materialInstances.putObject("south").put("texture", textureMap.path("south").asText());
+            materialInstances.putObject("west").put("texture", textureMap.path("west").asText());
+            materialInstances.putObject("up").put("texture", textureMap.path("up").asText());
+            materialInstances.putObject("down").put("texture", textureMap.path("down").asText());
+
+            geyser.put(realTexture, materialInstances);
         }
     }
 

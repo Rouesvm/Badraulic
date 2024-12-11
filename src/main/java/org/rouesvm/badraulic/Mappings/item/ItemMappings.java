@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import eu.pb4.polymer.core.api.item.PolymerItem;
 import eu.pb4.polymer.core.api.item.PolymerItemUtils;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.CustomModelDataComponent;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.RegistryKey;
@@ -20,23 +22,23 @@ public class ItemMappings {
         Item item = entry.getValue();
 
         if (!(item.asItem() instanceof PolymerItem polymerItem)) return;
-        ItemStack itemStack = PolymerItemUtils.getPolymerItemStack(item.getDefaultStack(), PacketContext.create());
+        ItemStack itemStack = PolymerItemUtils.getPolymerItemStack(item.getDefaultStack(), PacketContext.get());
         if (itemStack == null) return;
         Optional<RegistryKey<Item>> optionalKey = itemStack.getRegistryEntry().getKey();
         if (optionalKey.isEmpty()) return;
 
         Identifier name = optionalKey.get().getValue();
         String realName = item.asItem().getTranslationKey();
-        Identifier itemModel = polymerItem.getPolymerItemModel(itemStack, PacketContext.create());
+        CustomModelDataComponent itemModel = itemStack.get(DataComponentTypes.CUSTOM_MODEL_DATA);
 
-        String modName = itemModel.getNamespace();
+        String modName = name.getNamespace();
 
         ObjectNode itemsNode = modItemNodes.computeIfAbsent(modName, k -> new ObjectMapper().createObjectNode());
         ArrayNode itemNode = (ArrayNode) itemsNode.get(name.toString());
         if (itemNode == null) itemNode = createVanillaItem(itemsNode, name.toString());
         if (itemNode == null) return;
 
-        createItem(itemNode, itemModel, realName);
+        createItem(itemNode, itemModel.value(), realName);
         itemsNode.set(name.toString(), itemNode);
     }
 
@@ -52,13 +54,13 @@ public class ItemMappings {
         return itemsNode.putArray(itemName);
     }
 
-    public static void createItem(ArrayNode itemNode, Identifier itemModel, String realName) {
+    public static void createItem(ArrayNode itemNode, int itemModel, String realName) {
         ObjectNode smallBackpack = itemNode.addObject();
         smallBackpack.put("display_name", realName);
         smallBackpack.put("name", realName);
         smallBackpack.put("allow_offhand", true);
-        smallBackpack.put("icon", itemModel.toString());
-        smallBackpack.put("item_model_data", itemModel.toString());
+        smallBackpack.put("icon", realName);
+        smallBackpack.put("custom_model_data", itemModel);
         smallBackpack.put("creative_category", 1);
     }
 }

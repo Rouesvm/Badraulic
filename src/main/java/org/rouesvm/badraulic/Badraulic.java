@@ -10,13 +10,11 @@ import java.io.IOException;
 import static org.rouesvm.badraulic.Mappings.GeyserMappings.getBlocks;
 import static org.rouesvm.badraulic.Mappings.GeyserMappings.getItems;
 
-public class Badraulic implements ModInitializer, EventRegistrar {
+public class Badraulic implements ModInitializer {
 
     @Override
     public void onInitialize() {
         ServerLifecycleEvents.SERVER_STARTING.register(minecraftServer -> {
-            GeyserApi.api().eventBus().register(this, this);
-
             try {
                 getItems();
             } catch (IOException e) {
