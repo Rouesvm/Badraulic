@@ -13,6 +13,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
+import static org.rouesvm.badraulic.Mappings.block.BlockMappings.createGeyserTextures;
 import static org.rouesvm.badraulic.Pack.PackReader.*;
 
 public class GeyserMappings {
@@ -23,7 +24,7 @@ public class GeyserMappings {
         Registries.BLOCK.getEntrySet().forEach(entry ->
                 BlockMappings.createForBlock(modStateOverrides, instances, entry));
 
-        Set<String> stringSet = getTextures();
+        Set<String> stringSet = getBlockTextures();
         BlockMappings.createFiles(stringSet, modStateOverrides);
     }
 
@@ -53,5 +54,16 @@ public class GeyserMappings {
             Files.createDirectories(modFilePath.getParent());
             mapper.writeValue(modFilePath.toFile(), base);
         }
+
+        Set<String> stringSet = getItemTextures();
+
+        Map<String, Object> modTextureData = new HashMap<>();
+        Map<String, Object> jsonObject = new HashMap<>();
+        createGeyserTextures(stringSet, jsonObject);
+        modTextureData.put("textureData", jsonObject);
+
+        mapper.writeValue(Paths.get("mod_jsons", "item_texture.json").toFile(),
+                modTextureData.get("textureData")
+        );
     }
 }

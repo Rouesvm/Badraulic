@@ -45,7 +45,8 @@ public class BlockMappings {
             Map<String, Object> stateOverrides = modStateOverrides
                     .computeIfAbsent(modName, k -> new HashMap<>());
 
-            stateOverrides.put(geyserState, BlockMappings.createGeyserState(blockName, block, BlockMappings.getSimilarNames(instances, blockName)));
+            List<Object> uniqueName = BlockMappings.getSimilarNames(instances, blockName);
+            stateOverrides.put(geyserState, BlockMappings.createGeyserState(blockName, block, uniqueName));
         });
     }
 
@@ -135,7 +136,7 @@ public class BlockMappings {
         return geyserDetails;
     }
 
-    private static void createGeyserTextures(Set<String> names, Map<String, Object> jsonObject) {
+    public static void createGeyserTextures(Set<String> names, Map<String, Object> jsonObject) {
         names.forEach(string -> {
             Map<String, Object> textureDetails = new HashMap<>();
             textureDetails.put("texture", string);
