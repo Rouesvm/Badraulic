@@ -2,6 +2,7 @@ package org.rouesvm.badraulic.Pack;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import java.io.File;
@@ -11,6 +12,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -76,6 +78,23 @@ public class PackReader {
         JsonNode root = mapper.readTree(input);
 
         JsonNode textures = root.path("textures");
+
+        if (input.getName().equals("paper.json")) {
+            JsonNode arrayNode = root.get("overrides");
+            if (arrayNode != null && arrayNode.isArray()) {
+                arrayNode.forEach(jsonNode -> {
+                    JsonNode modelNode = jsonNode.get("model");
+                    System.out.println(modelNode);
+                    String texture = modelNode.asText();
+                    String newTexture = texture;
+                    newTexture =  "textures/" + newTexture;
+                    newTexture = newTexture.replace("custom/", "custom/item/");
+                    stringMap.put(texture, newTexture);
+                });
+            }
+        }
+
+        // Separate ifs because lower is more accurate.
 
         if (textures.isObject()) {
             textures.fields().forEachRemaining(entry -> {
@@ -276,13 +295,14 @@ public class PackReader {
         List<Path> jsonFiles = new ArrayList<>();
         Path startPath = Path.of(rootDir);
 
-        Files.walk(startPath)
-                .filter(path -> {
-                    Path relativePath = startPath.relativize(path);
-                    return relativePath.toString().contains(targetSubfolder) &&
-                            path.toString().endsWith(".json");
-                })
-                .forEach(jsonFiles::add);
+        Stream<Path> files = Files.walk(startPath);
+        try (files) {
+            files.filter(path -> {
+                        Path relativePath = startPath.relativize(path);
+                        return relativePath.toString().contains(targetSubfolder) &&
+                                path.toString().endsWith(".json");
+                    }).forEach(jsonFiles::add);
+        }
 
         return jsonFiles;
     }

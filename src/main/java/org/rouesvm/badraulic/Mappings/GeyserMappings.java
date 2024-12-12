@@ -33,7 +33,7 @@ public class GeyserMappings {
         ObjectMapper mapper = new ObjectMapper();
         mapper.enable(SerializationFeature.INDENT_OUTPUT);
         for (ObjectNode modEntry : customModelData) {
-            Path modFilePath = Paths.get("mod_jsons", "stuff" + "_mappings.json");
+            Path modFilePath = Paths.get("mod_jsons", "mixed_item_mappings.json");
             Files.createDirectories(modFilePath.getParent());
             mapper.writeValue(modFilePath.toFile(), modEntry);
         }

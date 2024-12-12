@@ -1,17 +1,14 @@
 package org.rouesvm.badraulic;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import org.rouesvm.badraulic.Mappings.item.ItemJsonConvertor;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.nio.file.Path;
+import java.util.*;
 
 import static org.rouesvm.badraulic.Mappings.GeyserMappings.getBlocks;
 import static org.rouesvm.badraulic.Mappings.GeyserMappings.getItems;
@@ -39,13 +36,17 @@ public class Badraulic implements ModInitializer {
     public static Set<ObjectNode> getCustomModelData() throws IOException {
         Set<ObjectNode> instances = new HashSet<>();
 
-        getCustomModelDataJsonFiles("polymer/resource_pack_unzipped").forEach(stuff -> {
-            try {
-                instances.add(ItemJsonConvertor.convertJsonToGeyserFormat(stuff.toFile()));
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        });
+        List<Path> list = getCustomModelDataJsonFiles("polymer/resource_pack_unzipped");
+        if (!list.isEmpty()) {
+            list.forEach(file -> {
+                try {
+                    ObjectNode node = ItemJsonConvertor.convertJsonToGeyserFormat(file.toFile());
+                    if (node != null) instances.add(node);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        }
 
         return instances;
     }

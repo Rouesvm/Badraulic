@@ -11,6 +11,8 @@ import java.util.Map;
 
 public class ItemJsonConvertor {
     public static ObjectNode convertJsonToGeyserFormat(File input) throws Exception {
+        if (!input.exists()) return null;
+
         ObjectMapper mapper = new ObjectMapper();
 
         JsonNode inputRoot = mapper.readTree(input);
