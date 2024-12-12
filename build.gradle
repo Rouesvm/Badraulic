@@ -3,6 +3,9 @@ plugins {
     id 'maven-publish'
 }
 
+minecraft_version = project.minecraft_version
+loader_version = project.loader_version
+
 version = project.mod_version
 group = project.maven_group
 
@@ -33,22 +36,20 @@ dependencies {
     modImplementation ("eu.pb4:polymer-blocks:${project.polymer_version}")
     modImplementation ("eu.pb4:polymer-resource-pack:${project.polymer_version}")
 
-    compileOnly("org.geysermc.geyser:api:${project.geyser_version}")
-
     implementation('com.fasterxml.jackson.core:jackson-databind:2.15.2')
     implementation('com.fasterxml.jackson.core:jackson-core:2.15.2')
 }
 
 processResources {
     inputs.property "version", project.version
-    inputs.property "minecraft_version", project.minecraft_version
-    inputs.property "loader_version", project.loader_version
+    inputs.property "minecraft_version", minecraft_version
+    inputs.property "loader_version", loader_version
     filteringCharset "UTF-8"
 
     filesMatching("fabric.mod.json") {
         expand "version": project.version,
-                "minecraft_version": project.minecraft_version,
-                "loader_version": project.loader_version
+                "minecraft_version": minecraft_version,
+                "loader_version": loader_version
     }
 }
 

@@ -9,7 +9,6 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.NoteBlock;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.util.Identifier;
-import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -19,6 +18,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static org.rouesvm.badraulic.Mappings.GeyserMappings.*;
 
 public class BlockMappings {
     public static void createForBlock(
@@ -50,7 +51,7 @@ public class BlockMappings {
         });
     }
 
-    public static void createFiles(Set<String> stringSet, Map<String, Map<String, Object>> modGeysers) throws IOException {
+    public static void createFiles(Map<String, String> stringSet, Map<String, Map<String, Object>> modGeysers) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         mapper.enable(SerializationFeature.INDENT_OUTPUT);
 
@@ -79,7 +80,7 @@ public class BlockMappings {
         Map<String, Object> modTextureData = new HashMap<>();
 
         Map<String, Object> jsonObject = new HashMap<>();
-        createGeyserTextures(stringSet, jsonObject);
+        createAccurateGeyserTextures(stringSet, jsonObject);
         modTextureData.put("textureData", jsonObject);
 
         mapper.writeValue(Paths.get("mod_jsons", "texture.json").toFile(),
@@ -89,40 +90,9 @@ public class BlockMappings {
 
     private static List<Object> getSimilarNames(Map<String, Object> instances, String name) {
         return instances.entrySet().stream()
-                .filter(entry -> isSimilar(entry.getKey(), name))
+                .filter(entry -> isSimilar(entry.getKey(), normalizeName(name)))
                 .map(Map.Entry::getValue)
                 .collect(Collectors.toList());
-    }
-
-    private static boolean isSimilar(String key, String name) {
-        boolean contains = key.toLowerCase().contains(name.toLowerCase());
-        Set<String> strings = splitString(name);
-
-        int amount = 0;
-
-        for (String string : strings) {
-            if (key.toLowerCase().contains(string.toLowerCase())) {
-                if (amount < strings.size())
-                    amount++;
-            }
-        }
-
-        if (amount == strings.size()) return true;
-
-        if (name.contains("block") && !contains)
-            return key.toLowerCase().contains(name.toLowerCase().replace("_block", ""));
-        else if (key.toLowerCase().contains("_") && name.contains("_"))
-            return key.contains("_") && contains;
-        else if (key.toLowerCase().contains("_") && !name.contains("_"))
-            return false;
-
-        return contains;
-    }
-
-    private static Set<String> splitString(String input) {
-        input = input.replace(".json", "");
-        String[] parts = input.split("_");
-        return Set.of(parts);
     }
 
     private static Map<String, Object> createGeyserState(String name, Block block, List<Object> instances) {
