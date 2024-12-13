@@ -1,21 +1,25 @@
 package org.rouesvm.badraulic.Mappings;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import net.minecraft.registry.Registries;
 import org.rouesvm.badraulic.Badraulic;
 import org.rouesvm.badraulic.Mappings.block.BlockMappings;
+import org.rouesvm.badraulic.Mappings.item.ItemJsonConvertor;
 
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
-import static org.rouesvm.badraulic.Pack.PackReader.*;
+import static org.rouesvm.badraulic.Pack.Reader.PackReader.*;
 
 public class GeyserMappings {
+    public static void createFilesForJsons() throws IOException {
+        Files.createDirectories(Paths.get("geyser_jsons"));
+        Files.createDirectories(Paths.get("geyser_jsons/block"));
+        Files.createDirectories(Paths.get("geyser_jsons/item"));
+    }
+
     public static void getBlocks() throws IOException {
         Map<String, Object> instances = getMaterialInstances();
         Map<String, Map<String, Object>> modStateOverrides = new HashMap<>();
@@ -28,30 +32,10 @@ public class GeyserMappings {
     }
 
     public static void getItems() throws IOException {
-        Set<ObjectNode> customModelData = Badraulic.getCustomModelData();
+        Files.createDirectories(Paths.get("geyser_jsons"));
 
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.enable(SerializationFeature.INDENT_OUTPUT);
-        for (ObjectNode modEntry : customModelData) {
-            Path modFilePath = Paths.get("mod_jsons", "mixed_item_mappings.json");
-            Files.createDirectories(modFilePath.getParent());
-            mapper.writeValue(modFilePath.toFile(), modEntry);
-        }
-
-        Map<String, String> stringSet = getItemTextures();
-
-        Map<String, Object> modTextureData = new HashMap<>();
-        Map<String, Object> jsonObject = new HashMap<>();
-
-        jsonObject.put("resource_pack_name", "geyser_custom");
-        jsonObject.put("texture_name", "atlas.items");
-
-        createAccurateGeyserTextures(stringSet, jsonObject);
-        modTextureData.put("textureData", jsonObject);
-
-        mapper.writeValue(Paths.get("mod_jsons", "item_texture.json").toFile(),
-                modTextureData.get("textureData")
-        );
+        HashMap<String, ObjectNode> customModelData = Badraulic.getCustomModelData();
+        ItemJsonConvertor.createFiles(customModelData);
     }
 
     public static void createAccurateGeyserTextures(Map<String, String> names, Map<String, Object> jsonObject) {

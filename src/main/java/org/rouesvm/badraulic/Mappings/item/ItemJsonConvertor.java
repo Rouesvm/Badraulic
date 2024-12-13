@@ -2,41 +2,75 @@ package org.rouesvm.badraulic.Mappings.item;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import java.io.File;
-import java.util.Iterator;
-import java.util.Map;
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.*;
+
+import static org.rouesvm.badraulic.Mappings.GeyserMappings.createAccurateGeyserTextures;
+import static org.rouesvm.badraulic.Pack.Reader.PackReader.getItemTextures;
 
 public class ItemJsonConvertor {
-    public static ObjectNode convertJsonToGeyserFormat(File input) throws Exception {
+    public static void createFiles(HashMap<String, ObjectNode> customModelData) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.enable(SerializationFeature.INDENT_OUTPUT);
+        for (var modEntry : customModelData.entrySet())
+            mapper.writeValue(Paths.get("geyser_jsons/item", modEntry.getKey() + "_item_mappings.json").toFile(),
+                    modEntry.getValue()
+            );
+
+        Map<String, String> stringSet = getItemTextures();
+
+        Map<String, Object> modTextureData = new HashMap<>();
+        Map<String, Object> jsonObject = new HashMap<>();
+
+        jsonObject.put("resource_pack_name", "geyser_custom");
+        jsonObject.put("texture_name", "atlas.items");
+
+        createAccurateGeyserTextures(stringSet, jsonObject);
+        modTextureData.put("textureData", jsonObject);
+
+        mapper.writeValue(Paths.get("geyser_jsons", "item_texture.json").toFile(),
+                modTextureData.get("textureData"));
+    }
+
+    public static HashMap<String, ObjectNode> convertJsonToGeyserFormat(File input) throws Exception {
         if (!input.exists()) return null;
 
-        ObjectMapper mapper = new ObjectMapper();
+        HashMap<String, ObjectNode> modModels = new HashMap<>();
 
+        ObjectMapper mapper = new ObjectMapper();
         JsonNode inputRoot = mapper.readTree(input);
 
-        ObjectNode outputRoot = mapper.createObjectNode();
-        outputRoot.put("format_version", "1");
-
-        ObjectNode itemsNode = mapper.createObjectNode();
-        outputRoot.set("items", itemsNode);
-
-        Iterator<Map.Entry<String, JsonNode>> fields = inputRoot.fields();
-
-        while (fields.hasNext()) {
-            Map.Entry<String, JsonNode> entry = fields.next();
-
+        inputRoot.fields().forEachRemaining(entry -> {
             String minecraftKey = "minecraft:" + entry.getKey();
-            itemsNode.putArray(minecraftKey);
-
-            ArrayNode itemArray = (ArrayNode) itemsNode.get(minecraftKey);
             JsonNode innerMap = entry.getValue();
 
             innerMap.fields().forEachRemaining(innerEntry -> {
                 String icon = innerEntry.getKey();
                 int customModelData = innerEntry.getValue().asInt();
+
+                String modName = icon.split(":")[0];
+                if (modName.contains("/")) modName = "custom";
+
+                ObjectNode itemsNode = modModels.computeIfAbsent(modName, key -> mapper.createObjectNode());
+                ObjectNode itemsMap = (ObjectNode) itemsNode.get("items");
+
+                if (itemsMap == null) {
+                    itemsMap = mapper.createObjectNode();
+                    itemsNode.put("format_version", "1");
+                    itemsNode.set("items", itemsMap);
+                }
+
+                ArrayNode itemArray = (ArrayNode) itemsMap.get(minecraftKey);
+                if (itemArray == null) {
+                    itemArray = mapper.createArrayNode();
+                    itemsMap.set(minecraftKey, itemArray);
+                }
 
                 ObjectNode itemObject = mapper.createObjectNode();
                 String itemName = icon.replace("/", "_").replace(":", ".");
@@ -48,9 +82,11 @@ public class ItemJsonConvertor {
                 itemObject.put("creative_category", 1);
 
                 itemArray.add(itemObject);
-            });
-        }
 
-        return outputRoot;
+                modModels.put(modName, itemsNode);
+            });
+        });
+
+        return modModels;
     }
 }

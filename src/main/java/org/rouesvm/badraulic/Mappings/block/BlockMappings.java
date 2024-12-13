@@ -11,12 +11,10 @@ import net.minecraft.registry.RegistryKey;
 import net.minecraft.util.Identifier;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.rouesvm.badraulic.Mappings.GeyserMappings.*;
@@ -55,9 +53,7 @@ public class BlockMappings {
         ObjectMapper mapper = new ObjectMapper();
         mapper.enable(SerializationFeature.INDENT_OUTPUT);
 
-        Files.createDirectories(Paths.get("mod_jsons"));
-
-        for (Map.Entry<String, Map<String, Object>> modEntry : modGeysers.entrySet()) {
+        for (var modEntry : modGeysers.entrySet()) {
             Map<String, Object> geyserConfig = Map.of(
                     "format_version", 1,
                     "blocks", Map.of(
@@ -72,9 +68,8 @@ public class BlockMappings {
                     )
             );
 
-            mapper.writeValue(Paths.get("mod_jsons", modEntry.getKey() + "_geyser_config.json").toFile(),
-                    geyserConfig
-            );
+            mapper.writeValue(Paths.get("geyser_jsons/block", modEntry.getKey() + "_block_mappings.json").toFile(),
+                    geyserConfig);
         }
 
         Map<String, Object> modTextureData = new HashMap<>();
@@ -83,7 +78,7 @@ public class BlockMappings {
         createAccurateGeyserTextures(stringSet, jsonObject);
         modTextureData.put("textureData", jsonObject);
 
-        mapper.writeValue(Paths.get("mod_jsons", "texture.json").toFile(),
+        mapper.writeValue(Paths.get("geyser_jsons", "terrain_texture.json").toFile(),
                 modTextureData.get("textureData")
         );
     }
@@ -104,14 +99,6 @@ public class BlockMappings {
         if (!instances.isEmpty() && instances.getFirst() != null)
             geyserDetails.put("material_instances", instances.getFirst());
         return geyserDetails;
-    }
-
-    public static void createGeyserTextures(Set<String> names, Map<String, Object> jsonObject) {
-        names.forEach(string -> {
-            Map<String, Object> textureDetails = new HashMap<>();
-            textureDetails.put("texture", string);
-            jsonObject.put(string, textureDetails);
-        });
     }
 
     private static String convertBlockFormat(String input) {
