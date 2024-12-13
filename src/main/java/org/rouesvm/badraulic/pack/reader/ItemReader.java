@@ -1,4 +1,4 @@
-package org.rouesvm.badraulic.Pack.Reader;
+package org.rouesvm.badraulic.pack.reader;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.rouesvm.badraulic.Pack.Reader.PackReader.findJsonFiles;
+import static org.rouesvm.badraulic.pack.reader.PackReader.findJsonFiles;
 
 public class ItemReader {
     public static Map<String, String> getItemTextureName(File input) throws IOException {

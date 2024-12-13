@@ -1,4 +1,4 @@
-package org.rouesvm.badraulic.Pack.Reader;
+package org.rouesvm.badraulic.pack.reader;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -9,9 +9,9 @@ import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import static org.rouesvm.badraulic.Pack.Reader.BlockReader.*;
-import static org.rouesvm.badraulic.Pack.Reader.ItemReader.getItemJsonFiles;
-import static org.rouesvm.badraulic.Pack.Reader.ItemReader.getItemTextureName;
+import static org.rouesvm.badraulic.pack.reader.BlockReader.*;
+import static org.rouesvm.badraulic.pack.reader.ItemReader.getItemJsonFiles;
+import static org.rouesvm.badraulic.pack.reader.ItemReader.getItemTextureName;
 
 public class PackReader {
     public static Map<String, Object> getMaterialInstances() {

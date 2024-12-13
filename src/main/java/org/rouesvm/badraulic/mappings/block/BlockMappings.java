@@ -1,4 +1,4 @@
-package org.rouesvm.badraulic.Mappings.block;
+package org.rouesvm.badraulic.mappings.block;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static org.rouesvm.badraulic.Mappings.GeyserMappings.*;
+import static org.rouesvm.badraulic.mappings.GeyserMappings.*;
 
 public class BlockMappings {
     public static void createForBlock(

@@ -1,6 +1,6 @@
-package org.rouesvm.badraulic.Pack.Creator;
+package org.rouesvm.badraulic.pack.creator;
 
-import org.rouesvm.badraulic.Pack.Reader.PackReader;
+import org.rouesvm.badraulic.pack.reader.PackReader;
 
 import java.io.IOException;
 import java.nio.file.Files;

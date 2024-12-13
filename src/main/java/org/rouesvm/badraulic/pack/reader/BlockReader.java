@@ -1,4 +1,4 @@
-package org.rouesvm.badraulic.Pack.Reader;
+package org.rouesvm.badraulic.pack.reader;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import static org.rouesvm.badraulic.Pack.Reader.PackReader.findJsonFiles;
+import static org.rouesvm.badraulic.pack.reader.PackReader.findJsonFiles;
 
 public class BlockReader {
     public static Map<String, String> getBlockTextureName(File input) throws IOException {

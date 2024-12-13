@@ -1,4 +1,4 @@
-package org.rouesvm.badraulic.Mappings.item;
+package org.rouesvm.badraulic.mappings.item;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -11,8 +11,8 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.*;
 
-import static org.rouesvm.badraulic.Mappings.GeyserMappings.createAccurateGeyserTextures;
-import static org.rouesvm.badraulic.Pack.Reader.PackReader.getItemTextures;
+import static org.rouesvm.badraulic.mappings.GeyserMappings.createAccurateGeyserTextures;
+import static org.rouesvm.badraulic.pack.reader.PackReader.getItemTextures;
 
 public class ItemJsonConvertor {
     public static void createFiles(HashMap<String, ObjectNode> customModelData) throws IOException {

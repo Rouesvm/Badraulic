@@ -1,17 +1,17 @@
-package org.rouesvm.badraulic.Mappings;
+package org.rouesvm.badraulic.mappings;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import net.minecraft.registry.Registries;
 import org.rouesvm.badraulic.Badraulic;
-import org.rouesvm.badraulic.Mappings.block.BlockMappings;
-import org.rouesvm.badraulic.Mappings.item.ItemJsonConvertor;
+import org.rouesvm.badraulic.mappings.block.BlockMappings;
+import org.rouesvm.badraulic.mappings.item.ItemJsonConvertor;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 
-import static org.rouesvm.badraulic.Pack.Reader.PackReader.*;
+import static org.rouesvm.badraulic.pack.reader.PackReader.*;
 
 public class GeyserMappings {
     public static void createFilesForJsons() throws IOException {

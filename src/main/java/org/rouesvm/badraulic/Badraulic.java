@@ -3,16 +3,16 @@ package org.rouesvm.badraulic;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
-import org.rouesvm.badraulic.Mappings.item.ItemJsonConvertor;
-import org.rouesvm.badraulic.Pack.Creator.PackCreator;
+import org.rouesvm.badraulic.mappings.item.ItemJsonConvertor;
+import org.rouesvm.badraulic.pack.creator.PackCreator;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
 
-import static org.rouesvm.badraulic.Mappings.GeyserMappings.*;
-import static org.rouesvm.badraulic.Pack.Reader.PackReader.getCustomModelDataJsonFiles;
-import static org.rouesvm.badraulic.Pack.Reader.PackReader.unzipPolymerPack;
+import static org.rouesvm.badraulic.mappings.GeyserMappings.*;
+import static org.rouesvm.badraulic.pack.reader.PackReader.getCustomModelDataJsonFiles;
+import static org.rouesvm.badraulic.pack.reader.PackReader.unzipPolymerPack;
 
 public class Badraulic implements ModInitializer {
 
