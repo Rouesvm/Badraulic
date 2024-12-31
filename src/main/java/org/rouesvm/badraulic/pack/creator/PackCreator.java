@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -19,25 +18,13 @@ public class PackCreator {
         Path texturePath = Path.of(pack + "/textures");
         Path textures = Files.createDirectories(texturePath);
 
-        createModFiles(textures);
-
-        List<Path> modTextures = new ArrayList<>();
-        String inputZip = "polymer/resource_pack_unzipped";
-        String[] modTextureNames = {"textures/item", "textures/block"};
-        Arrays.stream(modTextureNames).iterator().forEachRemaining(textureName -> {
-            try {
-                modTextures.addAll(findPngFiles(inputZip, textureName));
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        });
-
-        System.out.println(modTextures);
+        List<Path> modPaths = createModFiles(textures);
     }
 
-    private static void createModFiles(Path textures) throws IOException {
+    private static List<Path> createModFiles(Path textures) throws IOException {
         List<Path> mappings = getTextures();
         List<String> modNames = new ArrayList<>();
+        List<Path> modPaths = new ArrayList<>();
 
         mappings.forEach(path -> {
             String fileName = path.getFileName().toString();
@@ -51,10 +38,13 @@ public class PackCreator {
                 Path modPath = Files.createDirectories(Path.of(textures + "/" + names));
                 Files.createDirectories(Path.of(modPath + "/" + "item"));
                 Files.createDirectories(Path.of(modPath + "/" + "block"));
+                modPaths.add(modPath);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         });
+
+        return modPaths;
     }
 
     public static List<Path> findPngFiles(String rootDir, String targetSubfolder) throws IOException {

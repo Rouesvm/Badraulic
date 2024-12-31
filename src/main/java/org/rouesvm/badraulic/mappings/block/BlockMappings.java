@@ -9,12 +9,13 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.NoteBlock;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.util.Identifier;
+import org.rouesvm.badraulic.mappings.GeyserMappings;
 
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static org.rouesvm.badraulic.mappings.GeyserMappings.*;
@@ -40,6 +41,16 @@ public class BlockMappings {
             String blockName = identifier.getPath();
 
             String geyserState = BlockMappings.convertBlockFormat(noteblockState.toString());
+            String regex = "Block\\{[^}]*\\}\\[(.*)\\]";
+
+            Pattern pattern = Pattern.compile(regex);
+            Matcher matcher = pattern.matcher(blockState.toString());
+
+            if (matcher.find()) {
+                String result = matcher.group(1);
+                if ("activated=true".equals(result))
+                    blockName = blockName + "_on";
+            }
 
             Map<String, Object> stateOverrides = modStateOverrides
                     .computeIfAbsent(modName, k -> new HashMap<>());
@@ -85,7 +96,7 @@ public class BlockMappings {
 
     private static List<Object> getSimilarNames(Map<String, Object> instances, String name) {
         return instances.entrySet().stream()
-                .filter(entry -> isSimilar(entry.getKey(), normalizeName(name)))
+                .filter(entry -> isSimilar(normalizeName(entry.getKey()), normalizeName(name)))
                 .map(Map.Entry::getValue)
                 .collect(Collectors.toList());
     }

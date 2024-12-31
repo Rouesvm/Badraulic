@@ -173,8 +173,6 @@ public class BlockReader {
     public static List<Path> getBlockJsonFiles(String outputDir) throws IOException {
         List<Path> block1 = findJsonFiles(outputDir, "models/custom/block");
         List<Path> block2 = findJsonFiles(outputDir, "models/block");
-        List<Path> block3 = findJsonFiles(outputDir, "models/");
-        block2.addAll(block3);
         block2.addAll(block1);
         return block2;
     }

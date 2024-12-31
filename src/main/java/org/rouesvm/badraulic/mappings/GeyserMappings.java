@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.rouesvm.badraulic.pack.reader.PackReader.*;
 
@@ -51,8 +52,12 @@ public class GeyserMappings {
     }
 
     private static Set<String> splitString(String input) {
+        return splitString(input, "[._/]");
+    }
+
+    public static Set<String> splitString(String input, String toSplit) {
         input = input.replace(".json", "");
-        String[] parts = input.split("[._/]");
+        String[] parts = input.split(toSplit);
         return new HashSet<>(Arrays.asList(parts));
     }
 
@@ -67,11 +72,17 @@ public class GeyserMappings {
         boolean lengthMatch = key.length() == name.length();
         boolean letterCountCheck = key.length() >= name.length();
 
-        return (lengthMatch && contains) || (contains && letterCountCheck) || matchCount >= nameParts.size();
+        // Bruteforce is not what I want.
+        boolean containsOn = name.contains("on") && key.contains("on");
+
+        if (!name.contains("on") && key.contains("on"))
+            return false;
+
+        return (containsOn && contains) || (lengthMatch && contains) || (letterCountCheck && contains) || matchCount >= nameParts.size();
     }
 
     public static String normalizeName(String name) {
-        return name.replace("_on", "")
+        return name.replace("_side", "")
                 .replace(".json", "")
                 .replace("item.", "")
                 .replace("block.", "")
