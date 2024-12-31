@@ -3,10 +3,12 @@ package org.rouesvm.badraulic.pack.creator;
 import org.rouesvm.badraulic.pack.reader.PackReader;
 
 import java.io.IOException;
+import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
+import java.nio.file.StandardCopyOption;
+import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class PackCreator {
@@ -19,6 +21,78 @@ public class PackCreator {
         Path textures = Files.createDirectories(texturePath);
 
         List<Path> modPaths = createModFiles(textures);
+        copyBlockTexturesToPack(modPaths);
+        copyItemTexturesToPack(modPaths);
+    }
+
+    private static void copyItemTexturesToPack(List<Path> modPaths) throws IOException {
+        List<Path> modTextures = findPngFiles("polymer/resource_pack_unzipped", "textures/item");
+
+        Map<String, Path> modPathMap = modPaths.stream()
+                .collect(Collectors.toMap(
+                        modPath -> modPath.toString().replace("geyser_jsons/pack/textures/", ""),
+                        modPath -> modPath
+                ));
+
+        modTextures.parallelStream().forEach(path -> {
+            String relativePath = modPathMap.keySet().stream()
+                    .filter(path.toString()::contains)
+                    .findFirst()
+                    .orElse(null);
+
+            if (relativePath != null) {
+                try {
+                    Path modDir = modPathMap.get(relativePath).resolve("item");
+
+                    Path textureParentDir = path.getParent().getFileName();
+                    if (!textureParentDir.toString().equals("item")) {
+                        modDir = modDir.resolve(textureParentDir.toString());
+                    }
+
+                    Files.createDirectories(modDir);
+
+                    Path targetPath = modDir.resolve(path.getFileName());
+                    Files.copy(path, targetPath, StandardCopyOption.REPLACE_EXISTING);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
+    }
+
+    private static void copyBlockTexturesToPack(List<Path> modPaths) throws IOException {
+        List<Path> modTextures = findPngFiles("polymer/resource_pack_unzipped", "textures/block");
+
+        Map<String, Path> modPathMap = modPaths.stream()
+                .collect(Collectors.toMap(
+                        modPath -> modPath.toString().replace("geyser_jsons/pack/textures/", ""),
+                        modPath -> modPath
+                ));
+
+        modTextures.parallelStream().forEach(path -> {
+            String relativePath = modPathMap.keySet().stream()
+                    .filter(path.toString()::contains)
+                    .findFirst()
+                    .orElse(null);
+
+            if (relativePath != null) {
+                try {
+                    Path modDir = modPathMap.get(relativePath).resolve("block");
+
+                    Path textureParentDir = path.getParent().getFileName();
+                    if (!textureParentDir.toString().equals("block")) {
+                        modDir = modDir.resolve(textureParentDir.toString());
+                    }
+
+                    Files.createDirectories(modDir);
+
+                    Path targetPath = modDir.resolve(path.getFileName());
+                    Files.copy(path, targetPath, StandardCopyOption.REPLACE_EXISTING);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
     }
 
     private static List<Path> createModFiles(Path textures) throws IOException {

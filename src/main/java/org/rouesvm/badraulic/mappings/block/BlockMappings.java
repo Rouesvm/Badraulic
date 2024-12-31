@@ -9,7 +9,6 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.NoteBlock;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.util.Identifier;
-import org.rouesvm.badraulic.mappings.GeyserMappings;
 
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -21,6 +20,7 @@ import java.util.stream.Collectors;
 import static org.rouesvm.badraulic.mappings.GeyserMappings.*;
 
 public class BlockMappings {
+
     public static void createForBlock(
             Map<String, Map<String, Object>> modStateOverrides,
             Map<String, Object> instances,
@@ -41,14 +41,14 @@ public class BlockMappings {
             String blockName = identifier.getPath();
 
             String geyserState = BlockMappings.convertBlockFormat(noteblockState.toString());
-            String regex = "Block\\{[^}]*\\}\\[(.*)\\]";
+            String regex = "Block\\{[^}]*\\[(.*)";
 
             Pattern pattern = Pattern.compile(regex);
             Matcher matcher = pattern.matcher(blockState.toString());
 
             if (matcher.find()) {
                 String result = matcher.group(1);
-                if ("activated=true".equals(result))
+                if ("activated=true".equals(result) || "powered=true".equals(result))
                     blockName = blockName + "_on";
             }
 
