@@ -50,10 +50,6 @@ public class GeyserMappings {
         jsonObject.put("texture_data", jsonMap);
     }
 
-    private static Set<String> splitString(String input) {
-        return splitString(input, "[._/]");
-    }
-
     public static Set<String> splitString(String input, String toSplit) {
         input = input.replace(".json", "");
         String[] parts = input.split(toSplit);
@@ -63,29 +59,32 @@ public class GeyserMappings {
     public static boolean isSimilar(String key, String name) {
         boolean contains = key.toLowerCase().contains(name.toLowerCase()) ||
                 name.toLowerCase().contains(key.toLowerCase());
-        Set<String> keyParts = splitString(key);
-        Set<String> nameParts = splitString(name);
 
-        long matchCount = nameParts.stream().filter(keyParts::contains).count();
+        LinkedHashSet<String> keyParts = new LinkedHashSet<>(splitString(key, "[._/]"));
+        LinkedHashSet<String> nameParts = new LinkedHashSet<>(splitString(name, "[._/]"));
+
+        long matchCount = keyParts.stream()
+                .filter(nameParts::contains)
+                .count();
 
         boolean lengthMatch = key.length() == name.length();
         boolean letterCountCheck = key.length() >= name.length();
 
-        // Bruteforce is not what I want.
-        boolean containsOn = name.contains("on") && key.contains("on");
-
-        if (!name.contains("on") && key.contains("on"))
+        if (key.contains("_on") ^ name.contains("_on")) {
             return false;
+        }
 
-        return (containsOn && contains) || (lengthMatch && contains) || (letterCountCheck && contains) || matchCount >= nameParts.size();
+        return (lengthMatch && contains)
+                || (contains && letterCountCheck)
+                || matchCount >= nameParts.size();
     }
 
     public static String normalizeName(String name) {
         return name.replace("_side", "")
+                .replace("_all", "")
                 .replace(".json", "")
                 .replace("item.", "")
-                .replace("block.", "")
-                .replace("item.", "");
+                .replace("block.", "");
     }
 
 }

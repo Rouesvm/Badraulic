@@ -41,15 +41,15 @@ public class BlockMappings {
             String blockName = identifier.getPath();
 
             String geyserState = BlockMappings.convertBlockFormat(noteblockState.toString());
-            String regex = "Block\\{[^}]*\\[(.*)";
+            String regex = "Block\\{[^}]*\\}\\[(.*)\\]";
 
             Pattern pattern = Pattern.compile(regex);
             Matcher matcher = pattern.matcher(blockState.toString());
 
             if (matcher.find()) {
                 String result = matcher.group(1);
-                if ("activated=true".equals(result) || "powered=true".equals(result))
-                    blockName = blockName + "_on";
+                if ("activated=true".contains(result) || "powered=true".contains(result))
+                    blockName += "_on";
             }
 
             Map<String, Object> stateOverrides = modStateOverrides
