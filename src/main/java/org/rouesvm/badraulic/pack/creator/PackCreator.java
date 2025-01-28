@@ -1,11 +1,12 @@
 package org.rouesvm.badraulic.pack.creator;
 
 import org.jetbrains.annotations.NotNull;
+import org.rouesvm.badraulic.mappings.block.BlockMappings;
+import org.rouesvm.badraulic.mappings.item.ItemJsonConvertor;
 import org.rouesvm.badraulic.pack.reader.PackReader;
 
 import java.io.IOException;
 import java.nio.file.*;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -28,6 +29,12 @@ public class PackCreator {
 
         copyBlockTexturesToPack(modPathMap);
         copyItemTexturesToPack(modPathMap);
+
+        Path blockTexturesPath = Path.of(textures + "/" + BlockMappings.texture_json.getFileName());
+        Path itemTexturesPath = Path.of(textures + "/" + ItemJsonConvertor.texture_json.getFileName());
+
+        Files.copy(BlockMappings.texture_json, blockTexturesPath, StandardCopyOption.REPLACE_EXISTING);
+        Files.copy(ItemJsonConvertor.texture_json, itemTexturesPath, StandardCopyOption.REPLACE_EXISTING);
     }
 
     private static void copyItemTexturesToPack(Map<String, Path> modPathMap) throws IOException {
@@ -42,6 +49,7 @@ public class PackCreator {
             if (relativePath != null) {
                 try {
                     Path modDir = modPathMap.get(relativePath).resolve("item");
+
 
                     Path textureParentDir = path.getParent().getFileName();
                     if (!textureParentDir.toString().equals("item")) {
@@ -72,20 +80,33 @@ public class PackCreator {
                 try {
                     Path modDir = modPathMap.get(relativePath).resolve("block");
 
-                    Path textureParentDir = path.getParent().getFileName();
-                    if (!textureParentDir.toString().equals("block")) {
-                        modDir = modDir.resolve(textureParentDir.toString());
-                    }
-
-                    Files.createDirectories(modDir);
-
-                    Path targetPath = modDir.resolve(path.getFileName());
-                    Files.copy(path, targetPath, StandardCopyOption.REPLACE_EXISTING);
+                    Path fullPath = getFullPath(path, modDir);
+                    Files.createDirectories(fullPath.getParent());
+                    
+                    Files.copy(path, fullPath, StandardCopyOption.REPLACE_EXISTING);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
             }
         });
+    }
+
+    private static @NotNull Path getFullPath(Path path, Path modDir) {
+        Path currentDir = path.getParent();
+        Deque<String> dirStack = new ArrayDeque<>();
+
+        while (currentDir != null && !currentDir.getFileName().toString().contains("block")) {
+            dirStack.push(currentDir.getFileName().toString());
+            currentDir = currentDir.getParent();
+        }
+
+        Path fullPath = modDir;
+        while (!dirStack.isEmpty()) {
+            fullPath = fullPath.resolve(dirStack.pop());
+        }
+
+        fullPath = fullPath.resolve(path.getFileName().toString());
+        return fullPath;
     }
 
     private static List<Path> createModFiles(Path textures) throws IOException {

@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
@@ -15,6 +16,8 @@ import static org.rouesvm.badraulic.mappings.GeyserMappings.createAccurateGeyser
 import static org.rouesvm.badraulic.pack.reader.PackReader.getItemTextures;
 
 public class ItemJsonConvertor {
+    public static Path texture_json;
+
     public static void createFiles(HashMap<String, ObjectNode> customModelData) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         mapper.enable(SerializationFeature.INDENT_OUTPUT);
@@ -34,7 +37,8 @@ public class ItemJsonConvertor {
         createAccurateGeyserTextures(stringSet, jsonObject);
         modTextureData.put("textureData", jsonObject);
 
-        mapper.writeValue(Paths.get("geyser_jsons", "item_texture.json").toFile(),
+        texture_json = Paths.get("geyser_jsons", "item_texture.json");
+        mapper.writeValue(texture_json.toFile(),
                 modTextureData.get("textureData"));
     }
 

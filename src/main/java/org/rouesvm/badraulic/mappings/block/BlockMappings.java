@@ -11,6 +11,7 @@ import net.minecraft.registry.RegistryKey;
 import net.minecraft.util.Identifier;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -20,6 +21,7 @@ import java.util.stream.Collectors;
 import static org.rouesvm.badraulic.mappings.GeyserMappings.*;
 
 public class BlockMappings {
+    public static Path texture_json;
 
     public static void createForBlock(
             Map<String, Map<String, Object>> modStateOverrides,
@@ -89,7 +91,8 @@ public class BlockMappings {
         createAccurateGeyserTextures(stringSet, jsonObject);
         modTextureData.put("textureData", jsonObject);
 
-        mapper.writeValue(Paths.get("geyser_jsons", "terrain_texture.json").toFile(),
+        texture_json = Paths.get("geyser_jsons", "terrain_texture.json");
+        mapper.writeValue(texture_json.toFile(),
                 modTextureData.get("textureData")
         );
     }
@@ -105,7 +108,8 @@ public class BlockMappings {
         Map<String, Object> geyserDetails = new HashMap<>();
         geyserDetails.put("name", name);
         geyserDetails.put("display_name", name);
-        geyserDetails.put("destructible_by_mining", block.getHardness() * 2);
+        geyserDetails.put("destructible_by_mining", block.getHardness());
+        geyserDetails.put("friction", block.getSlipperiness());
 
         if (!instances.isEmpty() && instances.getFirst() != null)
             geyserDetails.put("material_instances", instances.getFirst());

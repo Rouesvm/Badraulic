@@ -55,7 +55,7 @@ public class BlockReader {
                         String texture = textureMap.path(textureKey).asText();
                         String newTexture = texture;
                         newTexture =  "textures/" + newTexture;
-                        newTexture = newTexture.replace("/block/custom", "/custom/block");
+                        newTexture = newTexture.replace("/block/custom", "/custom/block/custom");
 
                         stringMap.put(texture, newTexture);
                     });
