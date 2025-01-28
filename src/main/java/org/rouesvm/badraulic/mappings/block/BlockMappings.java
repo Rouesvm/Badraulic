@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -57,7 +58,7 @@ public class BlockMappings {
             Map<String, Object> stateOverrides = modStateOverrides
                     .computeIfAbsent(modName, k -> new HashMap<>());
 
-            List<Object> uniqueName = BlockMappings.getSimilarNames(instances, blockName);
+            List<Object> uniqueName = BlockMappings.getSimilarName(instances, blockName);
             stateOverrides.put(geyserState, BlockMappings.createGeyserState(blockName, block, uniqueName));
         });
     }
@@ -97,11 +98,23 @@ public class BlockMappings {
         );
     }
 
-    private static List<Object> getSimilarNames(Map<String, Object> instances, String name) {
-        return instances.entrySet().stream()
-                .filter(entry -> isSimilar(normalizeName(entry.getKey()), normalizeName(name)))
-                .map(Map.Entry::getValue)
-                .collect(Collectors.toList());
+    private static List<Object> getSimilarName(Map<String, Object> instances, String name) {
+        double prevScore = 0.0;
+        double currentScore;
+        List<Object> similarNames = List.of();
+
+        for (Map.Entry<String, Object> entry : instances.entrySet()) {
+            currentScore = isSimilar(normalizeName(entry.getKey()), normalizeName(name));
+
+            if (currentScore >= Math.max(prevScore, 0.7)) {
+                prevScore = currentScore;
+                similarNames = List.of(entry.getValue());
+            }
+        }
+
+        System.out.println(name + similarNames);
+
+        return similarNames;
     }
 
     private static Map<String, Object> createGeyserState(String name, Block block, List<Object> instances) {

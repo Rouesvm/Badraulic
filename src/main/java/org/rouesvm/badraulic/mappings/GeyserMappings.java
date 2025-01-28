@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.rouesvm.badraulic.pack.reader.PackReader.*;
 
@@ -56,28 +57,63 @@ public class GeyserMappings {
         return new HashSet<>(Arrays.asList(parts));
     }
 
-    public static boolean isSimilar(String key, String name) {
-        boolean contains = key.toLowerCase().contains(name.toLowerCase()) ||
-                name.toLowerCase().contains(key.toLowerCase());
+    public static double isSimilar(String key, String name) {
+        key = key.toLowerCase();
+        name = name.toLowerCase();
+
+        boolean contains = key.contains(name) || name.contains(key);
 
         LinkedHashSet<String> keyParts = new LinkedHashSet<>(splitString(key, "[._/]"));
         LinkedHashSet<String> nameParts = new LinkedHashSet<>(splitString(name, "[._/]"));
 
-        long matchCount = keyParts.stream()
-                .filter(nameParts::contains)
-                .count();
+        long matchCount = keyParts.stream().filter(nameParts::contains).count();
 
         boolean lengthMatch = key.length() == name.length();
         boolean letterCountCheck = key.length() >= name.length();
 
-        if (key.contains("_on") ^ name.contains("_on")) {
-            return false;
-        }
+        int levenshteinDistance = calculateLevenshteinDistance(key, name);
+        double normalizedLevenshtein = 1.0 - (double) levenshteinDistance / Math.max(key.length(), name.length());
+        double jaccardSimilarity = calculateJaccardSimilarity(keyParts, nameParts);
 
-        return (lengthMatch && contains)
-                || (contains && letterCountCheck)
-                || matchCount >= nameParts.size();
+        double matchScore = (matchCount * 0.3) +
+                (normalizedLevenshtein * 0.4) +
+                (jaccardSimilarity * 0.2);
+
+        if (lengthMatch) matchScore += 0.2;
+        if (letterCountCheck) matchScore += 0.1;
+        if (contains) matchScore += 0.1;
+
+        return (int) (matchScore * 100);
     }
+
+    public static int calculateLevenshteinDistance(String str1, String str2) {
+        int[][] dp = new int[str1.length() + 1][str2.length() + 1];
+        for (int i = 0; i <= str1.length(); i++) {
+            for (int j = 0; j <= str2.length(); j++) {
+                if (i == 0) {
+                    dp[i][j] = j;
+                } else if (j == 0) {
+                    dp[i][j] = i;
+                } else if (str1.charAt(i - 1) == str2.charAt(j - 1)) {
+                    dp[i][j] = dp[i - 1][j - 1];
+                } else {
+                    dp[i][j] = 1 + Math.min(dp[i - 1][j - 1], Math.min(dp[i - 1][j], dp[i][j - 1]));
+                }
+            }
+        }
+        return dp[str1.length()][str2.length()];
+    }
+
+    public static double calculateJaccardSimilarity(Set<String> set1, Set<String> set2) {
+        Set<String> intersection = new HashSet<>(set1);
+        intersection.retainAll(set2);
+
+        Set<String> union = new HashSet<>(set1);
+        union.addAll(set2);
+
+        return (double) intersection.size() / union.size();
+    }
+
 
     public static String normalizeName(String name) {
         return name.replace("_side", "")
