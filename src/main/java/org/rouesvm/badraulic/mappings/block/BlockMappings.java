@@ -112,8 +112,6 @@ public class BlockMappings {
             }
         }
 
-        System.out.println(name + similarNames);
-
         return similarNames;
     }
 
